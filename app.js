@@ -64,8 +64,9 @@ twitter.stream('statuses/filter', {'track':'clackamas'}, function(stream) {
     io.sockets.emit('tweet', data);
   });
   
-  stream.on('error', function(a, b) {
-    console.log('twitter error:', a, b)
+  stream.on('error', function(a, b, c, d, e) {
+    console.log('twitter error:', a, b, c, d, e);
+    console.log(twitter);
   });
 
 });
