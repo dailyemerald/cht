@@ -49,10 +49,10 @@ io.sockets.on('connection', function (socket) {
 });
  
 var twitter = new ntwitter({
-  consumer_key: process.env.T_CONSUMER_KEY,
-  consumer_secret: process.env.T_CONSUMER_SECRET,
-  access_token_key: process.env.T_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.T_ACCESS_TOKEN_SECRET
+  consumer_key: 'AtrVDe28zXUCGOnthGwow',
+  consumer_secret: 'fveZ5Bm3E326J6Oa9FQ5Pgnwio90fdZgb332bCbnk',
+  access_token_key: '18558963-XJ3NDts26wlzeCC52Dq4vVNjfl0yrexJwEhfybUx',
+  access_token_secret: 'Gh5AGGQTP87KX9ttwCyhAhO2Z7qly2VDmGAmjeoccE'
 });
 
 //console.log(twitter); //useful for debugging twitter connection
