@@ -57,6 +57,7 @@ var twitter = new ntwitter({
 
 //console.log(twitter); //useful for debugging twitter connection
 
+
 //twitter.stream('statuses/filter', {'locations':'-122.75,36.8,-121.75,37.8,-74,40,-73,41'}, function(stream) {
 twitter.stream('statuses/filter', {'track':'clackamas'}, function(stream) {
   stream.on('data', function (data) {
