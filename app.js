@@ -4,15 +4,19 @@ var express = require('express')
 
 var app = express()
   , port = process.env.PORT || 5000
-  , server = app.listen(port)
-  , io = require('socket.io').listen(server);
+  , ntwitter = require('ntwitter');
+
+var server = app.listen(port, function() {
+  console.log("Express server listening on port %d in %s mode", port, app.settings.env);
+});
+
+var io = require('socket.io').listen(server);
 
 var routes = require('./routes');
 
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
-  app.set("view options", { layout: "layout.ejs" });
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
@@ -32,31 +36,36 @@ io.configure(function () {
   io.set("polling duration", 10);
 });
 
-app.get('/', routes.index);
+app.get('/', routes.index); 
 
-// 
+// --- below is app code --- //
 
 io.sockets.on('connection', function (socket) {  
+  console.log('io.sockets event: connection');
   socket.on('reset', function (data) {
-    io.sockets.emit('hello', 'hello');
+    console.log('io.sockets event: reset');
+    io.sockets.emit('setup', {text: 'not implemented, but hello agian.'});
   });
 });
-
-// 
  
-var ntwitter = require('ntwitter');
-
 var twitter = new ntwitter({
-  consumer_key: 'Twitter',
-  consumer_secret: 'API',
-  access_token_key: 'keys',
-  access_token_secret: 'go here'
+  consumer_key: process.env.T_CONSUMER_KEY,
+  consumer_secret: process.env.T_CONSUMER_SECRET,
+  access_token_key: process.env.T_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.T_ACCESS_TOKEN_SECRET
 });
 
-twitter.stream('statuses/filter', {'locations':'-122.75,36.8,-121.75,37.8,-74,40,-73,41'}, function(stream) {
+//console.log(twitter); //useful for debugging twitter connection
+
+//twitter.stream('statuses/filter', {'locations':'-122.75,36.8,-121.75,37.8,-74,40,-73,41'}, function(stream) {
+twitter.stream('statuses/filter', {'track':'clackamas'}, function(stream) {
   stream.on('data', function (data) {
-    console.log(data);
+    console.log('new tweet with id:', data);
     io.sockets.emit('tweet', data);
   });
-});
+  
+  stream.on('error', function(a, b) {
+    console.log('twitter error:', a, b)
+  });
 
+});

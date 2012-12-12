@@ -1,6 +1,12 @@
 body {
-  padding: 50px;
+  padding: 6px;
+  margin: 0;
   font: 14px Helvetica, Arial, sans-serif;
+}
+
+#wrapper {
+	max-width: 500px;
+	margin: 0 auto;
 }
 
 a {
