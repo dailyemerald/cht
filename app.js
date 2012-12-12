@@ -11,6 +11,7 @@ var server = app.listen(port, function() {
 });
 
 var io = require('socket.io').listen(server);
+io.set('log level', 1);
 
 var routes = require('./routes');
 
@@ -55,7 +56,7 @@ var twitter = new ntwitter({
   access_token_secret: 'Gh5AGGQTP87KX9ttwCyhAhO2Z7qly2VDmGAmjeoccE'
 });
 
-//console.log(twitter); //useful for debugging twitter connection
+console.log(twitter); //useful for debugging twitter connection
 
 
 //twitter.stream('statuses/filter', {'locations':'-122.75,36.8,-121.75,37.8,-74,40,-73,41'}, function(stream) {
