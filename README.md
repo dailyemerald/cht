@@ -1,1 +1,3 @@
-Use the Streaming API https://dev.twitter.com/docs/api/1.1/post/statuses/filter to build a realtime tweet viewer with Heroku and Node.js
+## node/express/socket.io on heroku
+
+I spend sometime setting up socket.io and Heroku's Procfile for Heroku deployment, so I thought I'd wrap up some of the simple boilerplate to make it easier.

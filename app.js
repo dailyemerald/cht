@@ -1,19 +1,16 @@
 var express = require('express')
   , routes = require('./routes')
-  , http = require('http');
-
-var app = express()
+  , http = require('http')
+  , app = express()
   , port = process.env.PORT || 5000
-  , ntwitter = require('ntwitter');
+  , server = app.listen(port)
+  , io = require('socket.io').listen(server)
+  , Parse = require('parse').Parse
+ 
+Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JAVASCRIPT_KEY);
+var MessageObject = Parse.Object.extend("Message");
 
-var server = app.listen(port, function() {
-  console.log("Express server listening on port %d in %s mode", port, app.settings.env);
-});
-
-var io = require('socket.io').listen(server);
 io.set('log level', 1);
-
-var routes = require('./routes');
 
 app.configure(function() {
   app.set('views', __dirname + '/views');
@@ -38,37 +35,49 @@ io.configure(function () {
 });
 
 app.get('/', routes.index); 
+app.get('/about', routes.about);
 
-// --- below is app code --- //
+var save_message = function(data) {
+  var start_save_message = new Date();
+  var message = new MessageObject();
+   
+  message.set("name", data.name);
+  message.set("created_at", data.created_at);
+  message.set("text", data.text);
 
-io.sockets.on('connection', function (socket) {  
-  console.log('io.sockets event: connection');
-  socket.on('reset', function (data) {
-    console.log('io.sockets event: reset');
-    io.sockets.emit('setup', {text: 'not implemented, but hello agian.'});
+  message.save(null, {
+    success: function(message) {
+      var save_time = new Date() - start_save_message;
+      console.log("Saved in", save_time, "ms with ID:", message.id);
+    },
+    error: function(messge, error) {
+      var save_time = new Date() - start_save_message;
+      console.log("!Save failed!", message, error, save_time);
+    }
   });
-});
- 
-var twitter = new ntwitter({
-  consumer_key: 'AtrVDe28zXUCGOnthGwow',
-  consumer_secret: 'fveZ5Bm3E326J6Oa9FQ5Pgnwio90fdZgb332bCbnk',
-  access_token_key: '18558963-XJ3NDts26wlzeCC52Dq4vVNjfl0yrexJwEhfybUx',
-  access_token_secret: 'Gh5AGGQTP87KX9ttwCyhAhO2Z7qly2VDmGAmjeoccE'
-});
+}
 
-console.log(twitter); //useful for debugging twitter connection
+io.sockets.on('connection', function(socket) {  
 
+  console.log('! Client connected.');
+  socket.emit('status', 'Loading messages...');
 
-//twitter.stream('statuses/filter', {'locations':'-122.75,36.8,-121.75,37.8,-74,40,-73,41'}, function(stream) {
-twitter.stream('statuses/filter', {'track':'clackamas'}, function(stream) {
-  stream.on('data', function (data) {
-    console.log('new tweet with id:', data);
-    io.sockets.emit('tweet', data);
+  var find_start = new Date();
+  var query = new Parse.Query(MessageObject);
+  query.descending("createdAt");
+  query.find({
+    success: function(messages) {
+      socket.emit('backlog', messages);
+      socket.emit('status', '');
+      load_time = new Date() - find_start;
+      console.log('loaded backlong in', load_time, 'ms');
+    }
   });
-  
-  stream.on('error', function(a, b, c, d, e) {
-    console.log('twitter error:', a, b, c, d, e);
-    console.log(twitter);
+
+  socket.on('send_message', function(data) {
+    data.created_at = new Date();
+    io.sockets.emit('broadcast_message', data);
+    save_message(data);
   });
 
 });

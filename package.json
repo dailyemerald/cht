@@ -13,6 +13,6 @@
     "express": "3.0.4",
     "ejs": "~0.7.1",
     "socket.io": "~0.9.6",
-    "ntwitter": "*"
+    "parse": "*"
   }
 }
