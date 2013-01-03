@@ -37,6 +37,10 @@ io.configure(function () {
 app.get('/', routes.index); 
 app.get('/about', routes.about);
 
+var trim = function (str) {
+    return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+}
+
 var save_message = function(data) {
   var start_save_message = new Date();
   var message = new MessageObject();
@@ -44,6 +48,7 @@ var save_message = function(data) {
   message.set("name", data.name);
   message.set("created_at", data.created_at);
   message.set("text", data.text);
+  message.set("admin", data.admin);
 
   message.save(null, {
     success: function(message) {
@@ -55,6 +60,19 @@ var save_message = function(data) {
       console.log("!Save failed!", message, error, save_time);
     }
   });
+}
+
+var check_if_admin = function(data) {
+  var name = data.name;
+  var secret = process.env.ADMIN_SECRET;
+  data.admin = false;
+  console.log("before:", data);
+  if (name.indexOf(secret) >= 0) {
+    data.name = trim( data.name.replace(secret, '') );
+    data.admin = true;
+  }
+  console.log("after:", data);
+  return data;
 }
 
 io.sockets.on('connection', function(socket) {  
@@ -76,6 +94,7 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('send_message', function(data) {
     data.created_at = new Date();
+    data = check_if_admin(data);
     io.sockets.emit('broadcast_message', data);
     save_message(data);
   });
