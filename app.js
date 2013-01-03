@@ -6,6 +6,7 @@ var express = require('express')
   , server = app.listen(port)
   , io = require('socket.io').listen(server)
   , Parse = require('parse').Parse
+  , sanitize = require('validator').sanitize
  
 Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JAVASCRIPT_KEY);
 var MessageObject = Parse.Object.extend("Message");
@@ -94,6 +95,10 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('send_message', function(data) {
     data.created_at = new Date();
+    
+    data.name = sanitize(data.name).xss();
+    data.text = sanitize(data.text).xss();
+
     data = check_if_admin(data);
     io.sockets.emit('broadcast_message', data);
     save_message(data);
